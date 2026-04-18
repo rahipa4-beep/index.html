@@ -23,6 +23,30 @@
     --border: rgba(201,168,76,0.25);
     --card: rgba(27,45,66,0.8);
   }
+
+  /* FIREBASE LOADING */
+  #fb-loading {
+    position: fixed; inset: 0; background: rgba(13,27,42,0.95);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99999; flex-direction: column; gap: 16px;
+  }
+  #fb-loading .spinner {
+    width: 50px; height: 50px; border: 4px solid rgba(201,168,76,0.2);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #fb-loading p { color: var(--gold); font-size: 16px; font-weight: 600; }
+  #fb-loading small { color: var(--text2); font-size: 12px; }
+  .sync-badge {
+    position: fixed; bottom: 80px; right: 20px;
+    background: rgba(39,174,96,0.2); border: 1px solid #27AE60;
+    color: #66BB6A; padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; z-index: 1000;
+    display: none;
+  }
+  .sync-badge.show { display: block; }
+
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family: 'Tajawal', sans-serif;
@@ -526,6 +550,69 @@
     @page { margin: 1.5cm; size: A4 landscape; }
   }
 </style>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ===== FIREBASE CONFIG =====
+  // استبدل هذه القيم بإعدادات مشروعك من Firebase Console
+  const firebaseConfig = {
+    apiKey: "AIzaSyC024NIFjKy100kmiKRb_XNTVDvZI7fFYs",
+    authDomain: "lamsat-dari.firebaseapp.com",
+    databaseURL: "https://lamsat-dari-default-rtdb.firebaseio.com",
+    projectId: "lamsat-dari",
+    storageBucket: "lamsat-dari.firebasestorage.app",
+    messagingSenderId: "4463927198720",
+    appId: "1:4463927198720:web:206ab7d922f2426bd384e5",
+    measurementId: "G-KQTPTG9PG4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const suppliersRef = ref(db, "suppliers");
+
+  // ===== المزامنة الفورية =====
+  // يستمع لأي تغيير في Firebase ويحدث الواجهة فوراً لجميع المتصفحين
+  onValue(suppliersRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      // Firebase يخزن كـ object، نحوله لـ array مرتب
+      window.suppliers = Object.values(data).sort((a, b) => a.id - b.id);
+    } else {
+      // أول تشغيل: رفع البيانات الأولية إلى Firebase
+      window.suppliers = window._initialSuppliers;
+      uploadInitialData();
+    }
+    renderAll();
+  });
+
+  function uploadInitialData() {
+    const updates = {};
+    window._initialSuppliers.forEach(s => {
+      updates["supplier_" + s.id] = s;
+    });
+    set(suppliersRef, updates);
+  }
+
+  // ===== دوال Firebase المعرضة عالمياً =====
+  window.fb_saveSupplier = function(supplier) {
+    const key = "supplier_" + supplier.id;
+    set(ref(db, "suppliers/" + key), supplier);
+  };
+
+  window.fb_deleteSupplier = function(id) {
+    const key = "supplier_" + id;
+    remove(ref(db, "suppliers/" + key));
+  };
+
+  window.fb_updateField = function(id, field, value) {
+    const key = "supplier_" + id;
+    const updates = {};
+    updates[field] = value;
+    update(ref(db, "suppliers/" + key), updates);
+  };
+</script>
 </head>
 <body>
 
@@ -903,7 +990,9 @@
 
 <script>
 // =================== DATA ===================
-let suppliers = [
+// ===== البيانات الأولية (تُرفع إلى Firebase في أول تشغيل فقط) =====
+let suppliers = []; // سيتم تعبئتها من Firebase
+window._initialSuppliers = [
   {id:1, name:"الشهري", type:"مستمر", tawasol:"تم", itifaq:"", status:"سداد", balance:170194.09, cash:70000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"يحتاج الى زيارة"},
   {id:2, name:"زهرة العناية", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:39785.23, cash:25000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:""},
   {id:3, name:"تحويل الورق", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:69276.05, cash:50000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:""},
@@ -966,20 +1055,20 @@ let suppliers = [
   {id:60, name:"سيدكو", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:89673.11, cash:50000, sanad:50000, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الاحد"},
   {id:61, name:"اسكال", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:115014.93, cash:40000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
   {id:62, name:"ازهار عبدالكريم", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:23373.99, cash:13000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
-  {id:63, name:"الزهرة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:59031.46, cash:25000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:64, name:"لوزان", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:123887.51, cash:40000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:65, name:"الجديدة للامدادات", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:47674.83, cash:27000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:66, name:"المستثمر الرائد", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:13743.34, cash:13743, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:67, name:"أبو سهم", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:48233.17, cash:20000, sanad:30000, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:68, name:"اسرار الورد", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد + سند امر", balance:66395.28, cash:30000, sanad:50000, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:69, name:"عجلان", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:99263.94, cash:25000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"السبت"},
-  {id:70, name:"سنابل المتحدة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:18500.46, cash:18000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"مارد"},
-  {id:71, name:"اراك", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:168358.94, cash:50000, sanad:0, resp:"المدير العام", progress:null, notes:""},
-  {id:72, name:"روائع النور", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:73729.60, cash:30000, sanad:0, resp:"المدير العام", progress:null, notes:""},
-  {id:73, name:"دار الاميرات", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:40046.60, cash:25000, sanad:0, resp:"المدير العام", progress:null, notes:""},
-  {id:74, name:"التويجري", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:12203.67, cash:12203, sanad:30000, resp:"مدير المشتريات", progress:null, notes:""},
-  {id:75, name:"روائع دامة", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:50197.58, cash:30000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
-  {id:76, name:"أطياف الجود", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:16962.40, cash:10000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:63, name:"السدير", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:39155.21, cash:20000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:64, name:"شمال الرياض", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:17521.98, cash:10000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:65, name:"الصفرة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:12879.73, cash:7000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:66, name:"الفنار", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:52476.14, cash:25000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:67, name:"الساهر", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:57695.99, cash:30000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:68, name:"الرواد", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:16827.00, cash:10000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:69, name:"المجد", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:11223.49, cash:6000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:70, name:"الربيع", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:8451.64, cash:4500, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:71, name:"الواحة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:7298.20, cash:4000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:72, name:"النخبة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:6104.60, cash:3500, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:73, name:"الفخامة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:4783.92, cash:2500, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:74, name:"المدينة", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:79384.70, cash:40000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:75, name:"الريان", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:62719.45, cash:30000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:76, name:"الياسمين", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:48293.17, cash:25000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
   {id:77, name:"نجوم المراتب", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:59101.80, cash:30000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
   {id:78, name:"نجوم البردي", type:"كاش", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:540797.39, cash:0, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
   {id:79, name:"جرير", type:"كاش", tawasol:"لم يتم", itifaq:"لم يتم", status:"كاش", balance:0, cash:0, sanad:0, resp:"مدير المشتريات", progress:null, notes:""}
@@ -1242,14 +1331,18 @@ function saveEdit(id) {
   s.progress = document.getElementById('e_progress').value;
   s.notes = document.getElementById('e_notes').value;
   editingId = null;
+  // حفظ في Firebase (يتزامن تلقائياً لجميع المتصفحين)
+  if(window.fb_saveSupplier) window.fb_saveSupplier(s);
   renderTable();
   renderKPIs();
-  showToast('✅ تم تحديث بيانات المورد: ' + s.name);
+  showToast('✅ تم تحديث وحفظ بيانات المورد: ' + s.name);
 }
 function deleteSupplier(id) {
   const s = suppliers.find(x=>x.id===id);
   if(!s) return;
   if(!confirm(`هل تريد حذف المورد "${s.name}"؟`)) return;
+  // حذف من Firebase (يتزامن تلقائياً)
+  if(window.fb_deleteSupplier) window.fb_deleteSupplier(id);
   suppliers = suppliers.filter(x=>x.id!==id);
   renderTable();
   renderKPIs();
@@ -1297,11 +1390,13 @@ function addSupplier() {
     progress: document.getElementById('new_progress').value||null,
     notes: document.getElementById('new_notes').value
   });
+  // حفظ في Firebase (يتزامن تلقائياً)
+  if(window.fb_saveSupplier) window.fb_saveSupplier(suppliers[suppliers.length - 1]);
   // Clear form
   ['new_name','new_balance','new_cash','new_sanad','new_progress','new_notes'].forEach(id => document.getElementById(id).value = '');
   renderKPIs();
   renderReportCards();
-  showToast('✅ تمت إضافة المورد: ' + name);
+  showToast('✅ تمت إضافة المورد وحفظه: ' + name);
 }
 
 // =================== SUMMARY CHARTS ===================
@@ -1521,10 +1616,12 @@ function updateProgress(id) {
   if(!s) return;
   const val = document.getElementById('prog_'+id).value.trim();
   s.progress = val === '' ? null : val;
+  // حفظ في Firebase
+  if(window.fb_updateField) window.fb_updateField(s.id, 'progress', s.progress);
   renderStatusTab();
   renderReportCards();
   renderTable();
-  showToast('✅ تم تحديث نسبة إنجاز: ' + s.name + ' → ' + (val||'—'));
+  showToast('✅ تم تحديث وحفظ نسبة إنجاز: ' + s.name + ' → ' + (val||'—'));
 }
 
 function printFiltered() {
@@ -1548,7 +1645,70 @@ function printFiltered() {
     @page{margin:1cm;size:A4 landscape;}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  </head><body>
+  <!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ===== FIREBASE CONFIG =====
+  // استبدل هذه القيم بإعدادات مشروعك من Firebase Console
+  const firebaseConfig = {
+    apiKey: "AIzaSyC024NIFjKy100kmiKRb_XNTVDvZI7fFYs",
+    authDomain: "lamsat-dari.firebaseapp.com",
+    databaseURL: "https://lamsat-dari-default-rtdb.firebaseio.com",
+    projectId: "lamsat-dari",
+    storageBucket: "lamsat-dari.firebasestorage.app",
+    messagingSenderId: "4463927198720",
+    appId: "1:4463927198720:web:206ab7d922f2426bd384e5",
+    measurementId: "G-KQTPTG9PG4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const suppliersRef = ref(db, "suppliers");
+
+  // ===== المزامنة الفورية =====
+  // يستمع لأي تغيير في Firebase ويحدث الواجهة فوراً لجميع المتصفحين
+  onValue(suppliersRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      // Firebase يخزن كـ object، نحوله لـ array مرتب
+      window.suppliers = Object.values(data).sort((a, b) => a.id - b.id);
+    } else {
+      // أول تشغيل: رفع البيانات الأولية إلى Firebase
+      window.suppliers = window._initialSuppliers;
+      uploadInitialData();
+    }
+    renderAll();
+  });
+
+  function uploadInitialData() {
+    const updates = {};
+    window._initialSuppliers.forEach(s => {
+      updates["supplier_" + s.id] = s;
+    });
+    set(suppliersRef, updates);
+  }
+
+  // ===== دوال Firebase المعرضة عالمياً =====
+  window.fb_saveSupplier = function(supplier) {
+    const key = "supplier_" + supplier.id;
+    set(ref(db, "suppliers/" + key), supplier);
+  };
+
+  window.fb_deleteSupplier = function(id) {
+    const key = "supplier_" + id;
+    remove(ref(db, "suppliers/" + key));
+  };
+
+  window.fb_updateField = function(id, field, value) {
+    const key = "supplier_" + id;
+    const updates = {};
+    updates[field] = value;
+    update(ref(db, "suppliers/" + key), updates);
+  };
+</script>
+</head><body>
   <h1>شركة لمسة داري التجارية</h1>
   <div class="sub">تقرير حالة الموردين - نتائج مفلترة (${data.length} مورد)</div>
   <div class="date">تاريخ الطباعة: ${dateStr} - ${timeStr}</div>
@@ -1573,7 +1733,15 @@ function printFiltered() {
       <td style="font-size:9px;white-space:normal;max-width:100px">${s.notes||'—'}</td>
     </tr>`;
   });
-  html += '</tbody></table></body></html>';
+  html += '</tbody></table><!-- شاشة تحميل Firebase -->
+<div id="fb-loading">
+  <div class="spinner"></div>
+  <p>🔄 جاري الاتصال بقاعدة البيانات...</p>
+  <small>يرجى الانتظار - المزامنة الفورية</small>
+</div>
+<!-- مؤشر المزامنة -->
+<div class="sync-badge" id="syncBadge">✅ تم التزامن</div>
+</body></html>';
   const w = window.open('','_blank');
   w.document.write(html);
   w.document.close();
@@ -1590,6 +1758,29 @@ function showToast(msg) {
 }
 
 // =================== INIT ===================
+// renderAll - تُستدعى من Firebase listener
+function renderAll() {
+  // تحديث المتغير العالمي
+  suppliers = window.suppliers || suppliers;
+  renderKPIs();
+  populateFilters();
+  renderReportCards();
+  renderTable();
+  // إخفاء شاشة التحميل
+  const loader = document.getElementById('fb-loading');
+  if(loader) loader.style.display = 'none';
+  // إظهار مؤشر المزامنة
+  showSyncBadge();
+}
+
+function showSyncBadge() {
+  const badge = document.getElementById('syncBadge');
+  if(!badge) return;
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 2000);
+}
+
+// تشغيل أولي بدون Firebase (للعرض السريع)
 renderKPIs();
 populateFilters();
 renderReportCards();
