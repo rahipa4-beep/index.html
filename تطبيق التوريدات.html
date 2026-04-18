@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شركة لمسة داري التجارية - إدارة الموردين</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --gold-dark: #8B6914;
+    --deep: #0D1B2A;
+    --navy: #1B2D42;
+    --navy2: #243B55;
+    --accent: #2196F3;
+    --success: #27AE60;
+    --warning: #F39C12;
+    --danger: #E74C3C;
+    --text: #E8E4D8;
+    --text2: #A89B78;
+    --border: rgba(201,168,76,0.25);
+    --card: rgba(27,45,66,0.8);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(33,150,243,0.06) 0%, transparent 50%);
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, #0D1B2A 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--deep);
+    box-shadow: 0 4px 15px rgba(201,168,76,0.4);
+  }
+  .logo-text h1 { font-size: 20px; font-weight: 800; color: var(--gold); line-height: 1.2; }
+  .logo-text p { font-size: 11px; color: var(--text2); letter-spacing: 1px; }
+  .header-date {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .header-date strong { color: var(--gold); font-size: 16px; display: block; }
+
+  /* TABS */
+  .tabs {
+    background: var(--navy);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 2rem;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 16px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 700; }
+  .tab-icon { font-size: 18px; }
+
+  /* CONTENT */
+  .content { padding: 2rem; max-width: 1600px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+  .kpi-card.gold::before { background: var(--gold); }
+  .kpi-card.blue::before { background: #2196F3; }
+  .kpi-card.green::before { background: #27AE60; }
+  .kpi-card.orange::before { background: #F39C12; }
+  .kpi-card.red::before { background: #E74C3C; }
+  .kpi-label { font-size: 12px; color: var(--text2); margin-bottom: 8px; letter-spacing: 0.5px; }
+  .kpi-value { font-size: 28px; font-weight: 800; line-height: 1; }
+  .kpi-card.gold .kpi-value { color: var(--gold); }
+  .kpi-card.blue .kpi-value { color: #64B5F6; }
+  .kpi-card.green .kpi-value { color: #66BB6A; }
+  .kpi-card.orange .kpi-value { color: #FFA726; }
+  .kpi-card.red .kpi-value { color: #EF5350; }
+  .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 6px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to left, transparent, var(--border));
+  }
+
+  /* CARDS GRID FOR REPORTS */
+  .report-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 2rem;
+  }
+  .report-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.3s;
+    cursor: pointer;
+    border-right: 4px solid var(--border);
+  }
+  .report-card:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0,0,0,0.4); }
+  .report-card.status-sadad { border-right-color: #27AE60; }
+  .report-card.status-sanad { border-right-color: #2196F3; }
+  .report-card.status-both { border-right-color: var(--gold); }
+  .report-card.status-kash { border-right-color: #9B59B6; }
+  .rc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .rc-name { font-size: 16px; font-weight: 700; color: var(--text); }
+  .rc-num { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .rc-badge {
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .badge-mstamr { background: rgba(39,174,96,0.2); color: #66BB6A; }
+  .badge-jadeed { background: rgba(33,150,243,0.2); color: #64B5F6; }
+  .badge-eada { background: rgba(243,156,18,0.2); color: #FFA726; }
+  .badge-hali { background: rgba(201,168,76,0.2); color: var(--gold); }
+  .badge-kash { background: rgba(155,89,182,0.2); color: #CE93D8; }
+  .rc-amounts {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .ra-item { text-align: center; }
+  .ra-label { font-size: 10px; color: var(--text2); margin-bottom: 4px; }
+  .ra-val { font-size: 13px; font-weight: 700; }
+  .ra-val.creditor { color: #EF5350; }
+  .ra-val.cash { color: #66BB6A; }
+  .ra-val.sanad { color: #64B5F6; }
+  .rc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .rc-person { font-size: 11px; color: var(--text2); }
+  .rc-tawasol {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  .tawasol-done { background: rgba(39,174,96,0.15); color: #66BB6A; }
+  .tawasol-no { background: rgba(231,76,60,0.15); color: #EF5350; }
+  .rc-notes {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(0,0,0,0.15);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border-right: 3px solid var(--gold-dark);
+  }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .filter-group { display: flex; align-items: center; gap: 8px; }
+  .filter-group label { font-size: 13px; color: var(--text2); }
+  select, input[type="text"], input[type="number"] {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  select:focus, input:focus { border-color: var(--gold); }
+  .search-box {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13px;
+    outline: none;
+    flex: 1;
+    min-width: 200px;
+  }
+  .search-box::placeholder { color: var(--text2); }
+
+  /* TABLE */
+  .table-wrapper {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  thead th {
+    background: var(--navy2);
+    padding: 14px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+  }
+  tbody tr:hover { background: rgba(201,168,76,0.05); }
+  tbody td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .td-edit {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .btn-edit, .btn-save, .btn-cancel, .btn-del {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .btn-edit { background: rgba(33,150,243,0.2); color: #64B5F6; }
+  .btn-edit:hover { background: rgba(33,150,243,0.4); }
+  .btn-save { background: rgba(39,174,96,0.2); color: #66BB6A; }
+  .btn-save:hover { background: rgba(39,174,96,0.4); }
+  .btn-cancel { background: rgba(255,255,255,0.08); color: var(--text2); }
+  .btn-cancel:hover { background: rgba(255,255,255,0.15); }
+  .btn-del { background: rgba(231,76,60,0.15); color: #EF5350; }
+  .btn-del:hover { background: rgba(231,76,60,0.3); }
+  .edit-input {
+    background: var(--navy);
+    border: 1px solid var(--gold);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 12px;
+    width: 100%;
+    min-width: 80px;
+  }
+
+  /* SUMMARY SECTION */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 768px) { .summary-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .chart-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+
+  /* ADD SUPPLIER FORM */
+  .add-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 2rem;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .form-field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .form-field input, .form-field select, .form-field textarea {
+    width: 100%;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+  .form-field textarea { resize: vertical; min-height: 70px; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--deep);
+    border: none;
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.45); }
+
+  /* PRINT SECTION */
+  .print-header { display: none; }
+  .btn-print {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-print:hover { background: rgba(201,168,76,0.3); }
+
+  /* STATUS BADGES */
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pill-sadad { background: rgba(39,174,96,0.2); color: #66BB6A; }
+  .pill-sanad { background: rgba(33,150,243,0.2); color: #64B5F6; }
+  .pill-both { background: rgba(201,168,76,0.2); color: var(--gold); }
+  .pill-kash { background: rgba(155,89,182,0.2); color: #CE93D8; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--navy2);
+    border: 1px solid var(--gold);
+    color: var(--text);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.4s;
+    z-index: 9999;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    transition: width 0.5s;
+  }
+
+  /* SEARCH HIGHLIGHT */
+  .highlight { background: rgba(201,168,76,0.3); border-radius: 3px; padding: 0 2px; }
+
+  /* AMOUNT NUMBER */
+  .amount { font-weight: 700; font-family: 'Tajawal', sans-serif; }
+  .amount-danger { color: #EF5350; }
+  .amount-success { color: #66BB6A; }
+  .amount-info { color: #64B5F6; }
+  .amount-gold { color: var(--gold); }
+
+  /* RESPONSIBLE BADGE */
+  .resp-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.07);
+    color: var(--text2);
+  }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  /* --- PRINT STYLES --- */
+  @media print {
+    body { background: #fff; color: #000; font-size: 12px; }
+    .header, .tabs, .filters, .btn-print, .btn-edit, .btn-save, .btn-cancel, .btn-del,
+    .td-edit .btn-edit, .no-print { display: none !important; }
+    .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #C9A84C; padding-bottom: 16px; }
+    .print-header h1 { font-size: 22px; color: #8B6914; }
+    .print-header p { font-size: 13px; color: #555; }
+    .print-date { font-size: 12px; color: #777; margin-top: 4px; }
+    .tab-panel { display: block !important; }
+    .kpi-card { border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; break-inside: avoid; }
+    .kpi-value { color: #8B6914 !important; }
+    .kpi-label, .kpi-sub { color: #555 !important; }
+    table { font-size: 10px; }
+    thead th { background: #C9A84C !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+    tbody tr:nth-child(even) { background: #f5f0e8 !important; -webkit-print-color-adjust: exact; }
+    .report-card { border: 1px solid #ddd; background: #fff; break-inside: avoid; margin-bottom: 10px; }
+    .rc-name { color: #000 !important; }
+    .ra-val { color: #000 !important; }
+    .rc-person { color: #555 !important; }
+    .status-pill, .rc-badge, .resp-badge { color: #555 !important; background: #eee !important; }
+    .add-form, .summary-grid, .chart-card { display: none !important; }
+    .print-only-table { display: block !important; }
+    .content { padding: 0 !important; }
+    @page { margin: 1.5cm; size: A4 landscape; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">ل</div>
+    <div class="logo-text">
+      <h1>شركة لمسة داري التجارية</h1>
+      <p>نظام إدارة الموردين</p>
+    </div>
+  </div>
+  <div class="header-date">
+    <strong id="dateDisplay"></strong>
+    <div id="timeDisplay" style="font-size:13px; color:var(--text2);"></div>
+  </div>
+  <button class="btn-print no-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+</header>
+
+<!-- PRINT HEADER (shows only in print) -->
+<div class="print-header">
+  <h1>شركة لمسة داري التجارية</h1>
+  <p>تقرير إدارة الموردين الشامل</p>
+  <p class="print-date" id="printDate"></p>
+</div>
+
+<!-- TABS -->
+<nav class="tabs no-print">
+  <div class="tab active" onclick="switchTab('reports')">
+    <span class="tab-icon">📊</span> التقارير التفصيلية
+  </div>
+  <div class="tab" onclick="switchTab('data')">
+    <span class="tab-icon">📋</span> البيانات والمراقبة
+  </div>
+  <div class="tab" onclick="switchTab('summary')">
+    <span class="tab-icon">📈</span> الملخصات والتقارير الذكية
+  </div>
+  <div class="tab" onclick="switchTab('status')">
+    <span class="tab-icon">🔎</span> حالة المورد
+  </div>
+  <div class="tab" onclick="switchTab('manage')">
+    <span class="tab-icon">➕</span> إضافة / تعديل موردين
+  </div>
+</nav>
+
+<!-- ===== TAB 1: REPORTS ===== -->
+<div class="content">
+<div class="tab-panel active" id="tab-reports">
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="section-title">🏢 بطاقات الموردين التفصيلية</div>
+
+  <div class="filters no-print">
+    <input type="text" class="search-box" id="reportSearch" placeholder="🔍 ابحث عن مورد..." oninput="renderReportCards()">
+    <div class="filter-group">
+      <label>نوع الحساب:</label>
+      <select id="filterType" onchange="renderReportCards()">
+        <option value="">الكل</option>
+        <option value="مستمر">مستمر</option>
+        <option value="جديد">جديد</option>
+        <option value="إعادة تعامل">إعادة تعامل</option>
+        <option value="حالي">حالي</option>
+        <option value="كاش">كاش</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>حالة السداد:</label>
+      <select id="filterStatus" onchange="renderReportCards()">
+        <option value="">الكل</option>
+        <option value="سداد">سداد</option>
+        <option value="سند امر">سند امر</option>
+        <option value="سداد + سند امر">سداد + سند امر</option>
+        <option value="كاش">كاش</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>المسؤول:</label>
+      <select id="filterResp" onchange="renderReportCards()">
+        <option value="">الكل</option>
+      </select>
+    </div>
+    <div id="reportCount" style="font-size:13px; color:var(--text2); margin-right:auto;"></div>
+  </div>
+
+  <div class="report-cards" id="reportCards"></div>
+</div>
+
+<!-- ===== TAB 2: DATA TABLE ===== -->
+<div class="tab-panel" id="tab-data">
+  <div class="section-title">📋 جدول بيانات الموردين</div>
+  <div class="filters no-print">
+    <input type="text" class="search-box" id="tableSearch" placeholder="🔍 بحث سريع..." oninput="renderTable()">
+    <div class="filter-group">
+      <label>فرز حسب:</label>
+      <select id="sortBy" onchange="renderTable()">
+        <option value="">الافتراضي</option>
+        <option value="balance_desc">الرصيد (الأعلى أولاً)</option>
+        <option value="balance_asc">الرصيد (الأقل أولاً)</option>
+        <option value="cash_desc">الدفعات النقدية (الأعلى)</option>
+        <option value="sanad_desc">سند الأمر (الأعلى)</option>
+        <option value="name_asc">الاسم (أ-ي)</option>
+      </select>
+    </div>
+    <div id="tableCount" style="font-size:13px; color:var(--text2); margin-right:auto;"></div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>اسم المورد</th>
+          <th>نوع الحساب</th>
+          <th>التواصل</th>
+          <th>الاتفاق</th>
+          <th>حالة السداد</th>
+          <th>الرصيد الدائن</th>
+          <th>الدفعات النقدية</th>
+          <th>سند الأمر</th>
+          <th>المسؤول</th>
+          <th>نسبة الإنجاز</th>
+          <th>ملاحظات</th>
+          <th class="no-print">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TAB 3: SUMMARY ===== -->
+<div class="tab-panel" id="tab-summary">
+  <div class="section-title">📈 التقارير الذكية والتحليلات</div>
+
+  <div class="kpi-grid" id="kpiGrid2"></div>
+
+  <div class="summary-grid">
+    <div class="chart-card">
+      <div class="chart-title">توزيع أنواع الحسابات</div>
+      <div style="position:relative; height:260px;">
+        <canvas id="chartTypes" role="img" aria-label="توزيع أنواع حسابات الموردين"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">توزيع حالات السداد</div>
+      <div style="position:relative; height:260px;">
+        <canvas id="chartStatus" role="img" aria-label="توزيع حالات السداد"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">أعلى 10 موردين من حيث الرصيد الدائن</div>
+      <div style="position:relative; height:380px;">
+        <canvas id="chartTop10" role="img" aria-label="أعلى 10 موردين رصيداً"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">توزيع المسؤوليات (عدد الموردين لكل مسؤول)</div>
+      <div style="position:relative; height:380px;">
+        <canvas id="chartResp" role="img" aria-label="توزيع الموردين على المسؤولين"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:2rem;">
+    <div class="chart-title">مقارنة الدفعات النقدية مقابل سندات الأمر (أعلى 15 مورد)</div>
+    <div style="position:relative; height:300px;">
+      <canvas id="chartCompare" role="img" aria-label="مقارنة الدفعات النقدية وسندات الأمر"></canvas>
+    </div>
+  </div>
+
+  <!-- Smart Alerts -->
+  <div class="section-title">🔔 تنبيهات ذكية</div>
+  <div id="smartAlerts" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:14px; margin-bottom:2rem;"></div>
+
+  <!-- Responsibility Table -->
+  <div class="section-title">👤 ملخص المسؤولين</div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>المسؤول</th>
+          <th>عدد الموردين</th>
+          <th>إجمالي الرصيد الدائن</th>
+          <th>إجمالي الدفعات النقدية</th>
+          <th>إجمالي سند الأمر</th>
+          <th>نسبة من الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody id="respTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TAB 4: MANAGE ===== -->
+<div class="tab-panel" id="tab-manage">
+  <div class="section-title">➕ إضافة مورد جديد</div>
+  <div class="add-form">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>اسم الشركة / المورد *</label>
+        <input type="text" id="new_name" placeholder="أدخل اسم المورد">
+      </div>
+      <div class="form-field">
+        <label>نوع الحساب *</label>
+        <select id="new_type">
+          <option value="مستمر">مستمر</option>
+          <option value="جديد">جديد</option>
+          <option value="إعادة تعامل">إعادة تعامل</option>
+          <option value="حالي">حالي</option>
+          <option value="كاش">كاش</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>التواصل</label>
+        <select id="new_tawasol">
+          <option value="تم">تم</option>
+          <option value="لم يتم">لم يتم</option>
+          <option value=""></option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>الاتفاق مع المورد</label>
+        <select id="new_itifaq">
+          <option value="تم">تم</option>
+          <option value="لم يتم">لم يتم</option>
+          <option value=""></option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>حالة السداد *</label>
+        <select id="new_status">
+          <option value="سداد">سداد</option>
+          <option value="سند امر">سند امر</option>
+          <option value="سداد + سند امر">سداد + سند امر</option>
+          <option value="كاش">كاش</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>الرصيد الدائن (ريال)</label>
+        <input type="number" id="new_balance" placeholder="0" step="0.01">
+      </div>
+      <div class="form-field">
+        <label>مبلغ الدفعات النقدية (ريال)</label>
+        <input type="number" id="new_cash" placeholder="0" step="0.01">
+      </div>
+      <div class="form-field">
+        <label>مبلغ سند الأمر (ريال)</label>
+        <input type="number" id="new_sanad" placeholder="0" step="0.01">
+      </div>
+      <div class="form-field">
+        <label>الشخص المسؤول</label>
+        <select id="new_resp">
+          <option value="مسؤول المشتريات">مسؤول المشتريات</option>
+          <option value="مدير المشتريات">مدير المشتريات</option>
+          <option value="المدير التنفيذي / مسؤول المشتريات">المدير التنفيذي / مسؤول المشتريات</option>
+          <option value="المدير العام">المدير العام</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>نسبة الإنجاز % (0-100)</label>
+        <input type="number" id="new_progress" placeholder="0" min="0" max="100">
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom:20px;">
+      <label>ملاحظات</label>
+      <textarea id="new_notes" placeholder="أي ملاحظات خاصة بهذا المورد..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="addSupplier()">✅ إضافة المورد</button>
+  </div>
+
+  <div class="section-title">📝 قائمة الموردين للتعديل السريع</div>
+  <div class="filters no-print">
+    <input type="text" class="search-box" id="manageSearch" placeholder="🔍 ابحث لتعديل مورد..." oninput="renderManageTable()">
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>اسم المورد</th>
+          <th>نوع الحساب</th>
+          <th>حالة السداد</th>
+          <th>الرصيد الدائن</th>
+          <th>الدفعات النقدية</th>
+          <th>سند الأمر</th>
+          <th>المسؤول</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="manageTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ===== TAB 5: STATUS ===== -->
+<div class="tab-panel" id="tab-status">
+  <div class="section-title">🔎 حالة المورد - متابعة شاملة</div>
+
+  <div class="filters no-print">
+    <input type="text" class="search-box" id="statusSearch" placeholder="🔍 ابحث باسم المورد..." oninput="renderStatusTab()">
+    <div class="filter-group">
+      <label>نوع الحساب:</label>
+      <select id="statusFilterType" onchange="renderStatusTab()">
+        <option value="">الكل</option>
+        <option value="مستمر">مستمر</option>
+        <option value="جديد">جديد</option>
+        <option value="إعادة تعامل">إعادة تعامل</option>
+        <option value="حالي">حالي</option>
+        <option value="كاش">كاش</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>التواصل:</label>
+      <select id="statusFilterTawasol" onchange="renderStatusTab()">
+        <option value="">الكل</option>
+        <option value="تم">تم</option>
+        <option value="لم يتم">لم يتم</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>الاتفاق:</label>
+      <select id="statusFilterItifaq" onchange="renderStatusTab()">
+        <option value="">الكل</option>
+        <option value="تم">تم</option>
+        <option value="لم يتم">لم يتم</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>نسبة الإنجاز:</label>
+      <select id="statusFilterProgress" onchange="renderStatusTab()">
+        <option value="">الكل</option>
+        <option value="complete">مكتمل (100%)</option>
+        <option value="high">عالي (75-99%)</option>
+        <option value="mid">متوسط (25-74%)</option>
+        <option value="low">منخفض (1-24%)</option>
+        <option value="zero">لا يوجد (0%)</option>
+      </select>
+    </div>
+    <button class="btn-print no-print" onclick="printFiltered()" style="padding:8px 18px;font-size:13px;">🖨️ طباعة المفلتر</button>
+    <div id="statusCount" style="font-size:13px;color:var(--text2);margin-right:auto;"></div>
+  </div>
+
+  <!-- Status Summary KPIs -->
+  <div class="kpi-grid" id="statusKpis" style="margin-bottom:1.5rem;"></div>
+
+  <div class="table-wrapper">
+    <table id="statusTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>اسم المورد</th>
+          <th>نوع الحساب</th>
+          <th>التواصل</th>
+          <th>الاتفاق</th>
+          <th>حالة السداد</th>
+          <th>الرصيد الدائن</th>
+          <th>الدفعات النقدية</th>
+          <th>سند الأمر</th>
+          <th>نسبة الإنجاز</th>
+          <th>المسؤول</th>
+          <th>ملاحظات</th>
+          <th class="no-print">تعديل النسبة</th>
+        </tr>
+      </thead>
+      <tbody id="statusTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =================== DATA ===================
+let suppliers = [
+  {id:1, name:"الشهري", type:"مستمر", tawasol:"تم", itifaq:"", status:"سداد", balance:170194.09, cash:70000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"يحتاج الى زيارة"},
+  {id:2, name:"زهرة العناية", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:39785.23, cash:25000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:""},
+  {id:3, name:"تحويل الورق", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:69276.05, cash:50000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:""},
+  {id:4, name:"النجم المشرق", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:44306.68, cash:24000, sanad:0, resp:"المدير العام", progress:null, notes:"المدير العام يتصل لمديرهم"},
+  {id:5, name:"ليالي الاحلام", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:134962.27, cash:35000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:6, name:"روافد ريما", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:216631.50, cash:50000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:7, name:"أضواء البيرق", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:397610.62, cash:100000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:8, name:"الشراع", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:365828.60, cash:100000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:9, name:"رواد الأسطورة", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:170550.16, cash:35000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:10, name:"الشرقية الدولية", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:218593.17, cash:40000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:11, name:"الصحاح", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:163136.88, cash:40000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:12, name:"رواد السباله", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:135562.29, cash:35000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:13, name:"بيت الاواني", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:95123.49, cash:30000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:14, name:"عالم الابتكار", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:149728.71, cash:70000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:15, name:"جمال الديرة", type:"مستمر", tawasol:"", itifaq:"", status:"سداد", balance:158431.87, cash:40000, sanad:0, resp:"مدير المشتريات", progress:null, notes:"تأكيد من مدير المشتريات"},
+  {id:16, name:"سلسلة التطور", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:52057.38, cash:25000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:17, name:"الهدف الساطع", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:41878.31, cash:25000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:18, name:"رسيل", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:28338.56, cash:18000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:19, name:"ورق الاتحاد", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:56193.62, cash:25000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:20, name:"سعود السيف", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:65537.44, cash:27708, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:21, name:"جمال الملمس", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:78724.27, cash:31800, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:22, name:"أصول الطيب", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:42621.24, cash:22000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:23, name:"الدولية للأجهزة", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد + سند امر", balance:58405.85, cash:38000, sanad:30000, resp:"مسؤول المشتريات", progress:null, notes:"ابو يزن يتصل لمديرهم"},
+  {id:24, name:"لامينا", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد + سند امر", balance:13893.00, cash:13893, sanad:30000, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:25, name:"الخليج الحديثة", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:61565.06, cash:30000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"اجتماع مع مديره"},
+  {id:26, name:"السهم", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:16939.72, cash:16939, sanad:50000, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:27, name:"افضل التنظيف", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:8206.80, cash:8206, sanad:30000, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:28, name:"اتحاد كنان", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:145411.65, cash:56000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:29, name:"المثالي", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:51464.80, cash:26000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:30, name:"محيط الجودة", type:"مستمر", tawasol:"تم", itifaq:"تم", status:"سداد", balance:40492.34, cash:30000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:""},
+  {id:31, name:"الأبيض الحديث", type:"مستمر", tawasol:"تم", itifaq:"", status:"سداد + سند امر", balance:19285.67, cash:10000, sanad:30000, resp:"", progress:null, notes:"ابو يزن يتصل لمديرهم"},
+  {id:32, name:"يونتشارم الخليج", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:80000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"اكمال فتح حساب + سند امر"},
+  {id:33, name:"ادمز", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"اكمال فتح حساب + سند امر"},
+  {id:34, name:"بيت البحرين والخليج", type:"إعادة تعامل", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:100000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"اكمال فتح حساب + سند امر"},
+  {id:35, name:"الفارس (بهارات)", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:20000, resp:"مسؤول المشتريات", progress:"زيارة", notes:"اكمال فتح حساب + سند امر"},
+  {id:36, name:"اس باك", type:"إعادة تعامل", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"المدير التنفيذي / مسؤول المشتريات", progress:"اتصال", notes:"تحويل سلة اللدائن 6100 ثم تخليص الأوراق + فتح سند امر"},
+  {id:37, name:"اريج الصنوبر", type:"إعادة تعامل", tawasol:"تم", itifaq:"تم", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مسؤول المشتريات", progress:"زيارة الاحساء", notes:"تم الاتفاق على سند الامر + العقد والخصومات، سداد المبلغ المتبقي 2100"},
+  {id:38, name:"القصرين", type:"إعادة تعامل", tawasol:"تم", itifaq:"تم", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"مسؤول المشتريات", progress:"زيارة", notes:"سند امر (50000) + تم الاتفاق على السعر وعقد (5% على الفاتورة + 5% على السداد)"},
+  {id:39, name:"افاق البحار", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:20000, resp:"مسؤول المشتريات", progress:"زيارة", notes:"فتح الحساب"},
+  {id:40, name:"نابكو", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:80000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"لم يرد"},
+  {id:41, name:"ثري بي", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"مارد"},
+  {id:42, name:"روائع ليون", type:"إعادة تعامل", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:100000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"مارد"},
+  {id:43, name:"اوك", type:"جديد", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مسؤول المشتريات", progress:"اتصال", notes:"يوم السبت"},
+  {id:44, name:"سوبر فون", type:"إعادة تعامل", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:80000, resp:"المدير التنفيذي / مسؤول المشتريات", progress:"اتصال", notes:"يوم السبت"},
+  {id:45, name:"بركة الأمين", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:46, name:"الفيصل", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:47, name:"الفريدي", type:"إعادة تعامل", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:80000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:48, name:"حياة الشباب", type:"إعادة تعامل", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:100000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:49, name:"طلتك روعه", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:50, name:"ازيل كير", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:51, name:"بيت المرجان", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:52, name:"الراقي", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:53, name:"المرفى الذهبي", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:54, name:"فوزية", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:55, name:"فن التعمير", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:20000, resp:"مدير المشتريات", progress:null, notes:"لم يتم"},
+  {id:56, name:"المنهالي", type:"جديد", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:30000, resp:"المدير العام", progress:null, notes:"لم يتم"},
+  {id:57, name:"المراسيم", type:"إعادة تعامل", tawasol:"", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:100000, resp:"المدير العام", progress:null, notes:"لم يتم"},
+  {id:58, name:"اسرار نواعم", type:"إعادة تعامل", tawasol:"تم", itifaq:"", status:"سند امر", balance:0, cash:0, sanad:50000, resp:"المدير العام", progress:"اتصال", notes:"تم كنسلتة - بديل شركة من الرياض (المدير العام)"},
+  {id:59, name:"موبي", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:9949.80, cash:9949, sanad:50000, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الاحد"},
+  {id:60, name:"سيدكو", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:89673.11, cash:50000, sanad:50000, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الاحد"},
+  {id:61, name:"اسكال", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:115014.93, cash:40000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:62, name:"ازهار عبدالكريم", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:23373.99, cash:13000, sanad:0, resp:"مسؤول المشتريات", progress:"فرع الاحساء", notes:"الأحد"},
+  {id:63, name:"الزهرة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:59031.46, cash:25000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:64, name:"لوزان", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:123887.51, cash:40000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:65, name:"الجديدة للامدادات", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:47674.83, cash:27000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:66, name:"المستثمر الرائد", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:13743.34, cash:13743, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:67, name:"أبو سهم", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:48233.17, cash:20000, sanad:30000, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:68, name:"اسرار الورد", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد + سند امر", balance:66395.28, cash:30000, sanad:50000, resp:"مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:69, name:"عجلان", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:99263.94, cash:25000, sanad:0, resp:"المدير التنفيذي / مسؤول المشتريات", progress:null, notes:"السبت"},
+  {id:70, name:"سنابل المتحدة", type:"حالي", tawasol:"تم", itifaq:"لم يتم", status:"سداد", balance:18500.46, cash:18000, sanad:0, resp:"مسؤول المشتريات", progress:null, notes:"مارد"},
+  {id:71, name:"اراك", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:168358.94, cash:50000, sanad:0, resp:"المدير العام", progress:null, notes:""},
+  {id:72, name:"روائع النور", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:73729.60, cash:30000, sanad:0, resp:"المدير العام", progress:null, notes:""},
+  {id:73, name:"دار الاميرات", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:40046.60, cash:25000, sanad:0, resp:"المدير العام", progress:null, notes:""},
+  {id:74, name:"التويجري", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:12203.67, cash:12203, sanad:30000, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:75, name:"روائع دامة", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:50197.58, cash:30000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:76, name:"أطياف الجود", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:16962.40, cash:10000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:77, name:"نجوم المراتب", type:"حالي", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:59101.80, cash:30000, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:78, name:"نجوم البردي", type:"كاش", tawasol:"لم يتم", itifaq:"لم يتم", status:"سداد", balance:540797.39, cash:0, sanad:0, resp:"مدير المشتريات", progress:null, notes:""},
+  {id:79, name:"جرير", type:"كاش", tawasol:"لم يتم", itifaq:"لم يتم", status:"كاش", balance:0, cash:0, sanad:0, resp:"مدير المشتريات", progress:null, notes:""}
+];
+
+let chartInstances = {};
+
+// =================== HELPERS ===================
+function fmt(n) {
+  if(!n || n === 0) return "—";
+  return Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}) + " ر.س";
+}
+function fmtNum(n) {
+  return Number(n).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+// =================== DATE/TIME ===================
+function updateDateTime() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateStr = now.toLocaleDateString('ar-SA', opts);
+  const timeStr = now.toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('dateDisplay').textContent = dateStr;
+  document.getElementById('timeDisplay').textContent = timeStr;
+  document.getElementById('printDate').textContent = 'تاريخ التقرير: ' + dateStr + ' - ' + timeStr;
+}
+updateDateTime();
+setInterval(updateDateTime, 60000);
+
+// =================== TAB SWITCH ===================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(name === 'summary') renderSummary();
+  if(name === 'data') renderTable();
+  if(name === 'manage') renderManageTable();
+  if(name === 'status') renderStatusTab();
+}
+
+// =================== PROGRESS HELPERS ===================
+function getProgressNum(p) {
+  if(p === null || p === undefined || p === '') return null;
+  const n = parseInt(p);
+  if(!isNaN(n) && n >= 0 && n <= 100) return n;
+  return null;
+}
+function renderProgressBadge(p) {
+  const n = getProgressNum(p);
+  if(n === null) {
+    if(p) return `<div style="margin-top:8px;font-size:11px;color:var(--gold-light);background:rgba(201,168,76,0.1);padding:4px 10px;border-radius:6px;">📌 ${p}</div>`;
+    return '';
+  }
+  if(n >= 100) return `<div style="margin-top:8px;font-size:12px;font-weight:700;color:#66BB6A;background:rgba(39,174,96,0.15);padding:6px 12px;border-radius:8px;border:1px solid rgba(39,174,96,0.3);">✅ تم اكمال الملف</div>`;
+  const color = n >= 75 ? '#66BB6A' : n >= 50 ? '#C9A84C' : n >= 25 ? '#FFA726' : '#EF5350';
+  return `<div style="margin-top:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span style="color:var(--text2)">نسبة الإنجاز</span><span style="font-weight:700;color:${color}">${n}%</span></div><div style="background:rgba(255,255,255,0.08);border-radius:20px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:20px;background:${color};width:${n}%;transition:width 0.5s;"></div></div></div>`;
+}
+function renderProgressCell(p) {
+  const n = getProgressNum(p);
+  if(n === null) return p ? `<span style="font-size:11px;color:var(--gold)">${p}</span>` : '—';
+  if(n >= 100) return `<span style="color:#66BB6A;font-weight:700;font-size:12px;">✅ تم اكمال الملف</span>`;
+  const color = n >= 75 ? '#66BB6A' : n >= 50 ? '#C9A84C' : n >= 25 ? '#FFA726' : '#EF5350';
+  return `<div style="display:flex;align-items:center;gap:6px;"><div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;width:60px;overflow:hidden;"><div style="height:100%;border-radius:10px;background:${color};width:${n}%;"></div></div><span style="font-size:12px;font-weight:700;color:${color}">${n}%</span></div>`;
+}
+
+// =================== KPI ===================
+function renderKPIs() {
+  const totalBalance = suppliers.reduce((a,s) => a + (s.balance||0), 0);
+  const totalCash = suppliers.reduce((a,s) => a + (s.cash||0), 0);
+  const totalSanad = suppliers.reduce((a,s) => a + (s.sanad||0), 0);
+  const countNew = suppliers.filter(s => s.type === 'جديد').length;
+  const countContacted = suppliers.filter(s => s.tawasol === 'تم').length;
+  const countAgreed = suppliers.filter(s => s.itifaq === 'تم').length;
+
+  const html = `
+    <div class="kpi-card gold">
+      <div class="kpi-label">إجمالي الرصيد الدائن</div>
+      <div class="kpi-value" style="font-size:20px">${fmtNum(Math.round(totalBalance))}</div>
+      <div class="kpi-sub">ريال سعودي</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">إجمالي الدفعات النقدية</div>
+      <div class="kpi-value" style="font-size:20px">${fmtNum(totalCash)}</div>
+      <div class="kpi-sub">ريال سعودي</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">إجمالي سندات الأمر</div>
+      <div class="kpi-value" style="font-size:20px">${fmtNum(totalSanad)}</div>
+      <div class="kpi-sub">ريال سعودي</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">إجمالي عدد الموردين</div>
+      <div class="kpi-value">${suppliers.length}</div>
+      <div class="kpi-sub">${countNew} مورد جديد</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">تم التواصل</div>
+      <div class="kpi-value">${countContacted}</div>
+      <div class="kpi-sub">${countAgreed} تم الاتفاق معهم</div>
+    </div>
+  `;
+  document.getElementById('kpiGrid').innerHTML = html;
+  if(document.getElementById('kpiGrid2')) document.getElementById('kpiGrid2').innerHTML = html;
+}
+
+// =================== REPORT CARDS ===================
+function getBadgeClass(type) {
+  if(type==='مستمر') return 'badge-mstamr';
+  if(type==='جديد') return 'badge-jadeed';
+  if(type==='إعادة تعامل') return 'badge-eada';
+  if(type==='حالي') return 'badge-hali';
+  if(type==='كاش') return 'badge-kash';
+  return '';
+}
+function getStatusClass(status) {
+  if(status && status.includes('سداد + سند')) return 'status-both';
+  if(status && status.includes('سداد')) return 'status-sadad';
+  if(status && status.includes('سند')) return 'status-sanad';
+  if(status === 'كاش') return 'status-kash';
+  return '';
+}
+function getStatusPill(status) {
+  if(!status) return '';
+  if(status.includes('سداد + سند')) return `<span class="status-pill pill-both">${status}</span>`;
+  if(status.includes('سداد')) return `<span class="status-pill pill-sadad">${status}</span>`;
+  if(status.includes('سند')) return `<span class="status-pill pill-sanad">${status}</span>`;
+  if(status==='كاش') return `<span class="status-pill pill-kash">${status}</span>`;
+  return status;
+}
+
+function renderReportCards() {
+  const search = document.getElementById('reportSearch').value.toLowerCase();
+  const fType = document.getElementById('filterType').value;
+  const fStatus = document.getElementById('filterStatus').value;
+  const fResp = document.getElementById('filterResp').value;
+
+  let filtered = suppliers.filter(s => {
+    if(search && !s.name.toLowerCase().includes(search)) return false;
+    if(fType && s.type !== fType) return false;
+    if(fStatus && s.status !== fStatus) return false;
+    if(fResp && s.resp !== fResp) return false;
+    return true;
+  });
+
+  document.getElementById('reportCount').textContent = `عرض ${filtered.length} من ${suppliers.length} مورد`;
+
+  const html = filtered.map(s => `
+    <div class="report-card ${getStatusClass(s.status)}">
+      <div class="rc-header">
+        <div>
+          <div class="rc-name">${s.name}</div>
+          <div class="rc-num">#${s.id}</div>
+        </div>
+        <span class="rc-badge ${getBadgeClass(s.type)}">${s.type}</span>
+      </div>
+      <div class="rc-amounts">
+        <div class="ra-item">
+          <div class="ra-label">الرصيد الدائن</div>
+          <div class="ra-val creditor">${s.balance > 0 ? fmtNum(Math.round(s.balance)) : '—'}</div>
+        </div>
+        <div class="ra-item">
+          <div class="ra-label">الدفعات النقدية</div>
+          <div class="ra-val cash">${s.cash > 0 ? fmtNum(s.cash) : '—'}</div>
+        </div>
+        <div class="ra-item">
+          <div class="ra-label">سند الأمر</div>
+          <div class="ra-val sanad">${s.sanad > 0 ? fmtNum(s.sanad) : '—'}</div>
+        </div>
+      </div>
+      <div class="rc-footer">
+        <span class="rc-person">👤 ${s.resp || 'غير محدد'}</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          ${s.tawasol ? `<span class="rc-tawasol ${s.tawasol==='تم'?'tawasol-done':'tawasol-no'}">التواصل: ${s.tawasol}</span>` : ''}
+          ${getStatusPill(s.status)}
+        </div>
+      </div>
+      ${renderProgressBadge(s.progress)}
+      ${s.notes ? `<div class="rc-notes">💬 ${s.notes}</div>` : ''}
+    </div>
+  `).join('');
+  document.getElementById('reportCards').innerHTML = html || '<div style="text-align:center;padding:3rem;color:var(--text2);">لا توجد نتائج مطابقة للبحث</div>';
+}
+
+function populateFilters() {
+  const resps = [...new Set(suppliers.map(s=>s.resp).filter(Boolean))].sort();
+  const sel = document.getElementById('filterResp');
+  resps.forEach(r => { const o = document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+}
+
+// =================== TABLE ===================
+let editingId = null;
+function renderTable() {
+  const search = document.getElementById('tableSearch').value.toLowerCase();
+  const sortBy = document.getElementById('sortBy').value;
+  let data = suppliers.filter(s => !search || s.name.toLowerCase().includes(search) || (s.resp||'').toLowerCase().includes(search));
+
+  if(sortBy==='balance_desc') data.sort((a,b)=>b.balance-a.balance);
+  else if(sortBy==='balance_asc') data.sort((a,b)=>a.balance-b.balance);
+  else if(sortBy==='cash_desc') data.sort((a,b)=>b.cash-a.cash);
+  else if(sortBy==='sanad_desc') data.sort((a,b)=>b.sanad-a.sanad);
+  else if(sortBy==='name_asc') data.sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+
+  document.getElementById('tableCount').textContent = `${data.length} مورد`;
+
+  const html = data.map(s => {
+    if(editingId === s.id) {
+      return `<tr style="background:rgba(201,168,76,0.08)">
+        <td>${s.id}</td>
+        <td><input class="edit-input" id="e_name" value="${s.name}" style="width:120px"></td>
+        <td><select class="edit-input" id="e_type" style="width:100px"><option ${s.type==='مستمر'?'selected':''}>مستمر</option><option ${s.type==='جديد'?'selected':''}>جديد</option><option ${s.type==='إعادة تعامل'?'selected':''}>إعادة تعامل</option><option ${s.type==='حالي'?'selected':''}>حالي</option><option ${s.type==='كاش'?'selected':''}>كاش</option></select></td>
+        <td><select class="edit-input" id="e_tawasol" style="width:80px"><option ${s.tawasol==='تم'?'selected':''}>تم</option><option ${s.tawasol==='لم يتم'?'selected':''}>لم يتم</option><option value="" ${!s.tawasol?'selected':''}>—</option></select></td>
+        <td><select class="edit-input" id="e_itifaq" style="width:80px"><option ${s.itifaq==='تم'?'selected':''}>تم</option><option ${s.itifaq==='لم يتم'?'selected':''}>لم يتم</option><option value="" ${!s.itifaq?'selected':''}>—</option></select></td>
+        <td><select class="edit-input" id="e_status" style="width:120px"><option ${s.status==='سداد'?'selected':''}>سداد</option><option ${s.status==='سند امر'?'selected':''}>سند امر</option><option ${s.status==='سداد + سند امر'?'selected':''}>سداد + سند امر</option><option ${s.status==='كاش'?'selected':''}>كاش</option></select></td>
+        <td><input class="edit-input" id="e_balance" type="number" value="${s.balance}" style="width:100px"></td>
+        <td><input class="edit-input" id="e_cash" type="number" value="${s.cash}" style="width:90px"></td>
+        <td><input class="edit-input" id="e_sanad" type="number" value="${s.sanad}" style="width:90px"></td>
+        <td><select class="edit-input" id="e_resp" style="width:130px"><option ${s.resp==='مسؤول المشتريات'?'selected':''}>مسؤول المشتريات</option><option ${s.resp==='مدير المشتريات'?'selected':''}>مدير المشتريات</option><option ${s.resp==='المدير التنفيذي / مسؤول المشتريات'?'selected':''}>المدير التنفيذي / مسؤول المشتريات</option><option ${s.resp==='المدير العام'?'selected':''}>المدير العام</option></select></td>
+        <td><input class="edit-input" id="e_progress" type="number" min="0" max="100" value="${getProgressNum(s.progress)!==null?getProgressNum(s.progress):''}" placeholder="0-100" style="width:80px"></td>
+        <td><input class="edit-input" id="e_notes" value="${s.notes||''}" style="width:120px"></td>
+        <td class="td-edit"><button class="btn-save" onclick="saveEdit(${s.id})">✅ حفظ</button><button class="btn-cancel" onclick="cancelEdit()">✖</button></td>
+      </tr>`;
+    }
+    return `<tr>
+      <td>${s.id}</td>
+      <td style="font-weight:600">${s.name}</td>
+      <td><span class="rc-badge ${getBadgeClass(s.type)}">${s.type}</span></td>
+      <td><span style="color:${s.tawasol==='تم'?'#66BB6A':'#EF5350'}">${s.tawasol||'—'}</span></td>
+      <td><span style="color:${s.itifaq==='تم'?'#66BB6A':'#EF5350'}">${s.itifaq||'—'}</span></td>
+      <td>${getStatusPill(s.status)}</td>
+      <td class="amount ${s.balance>0?'amount-danger':''}">${s.balance>0?fmtNum(Math.round(s.balance)):'—'}</td>
+      <td class="amount ${s.cash>0?'amount-success':''}">${s.cash>0?fmtNum(s.cash):'—'}</td>
+      <td class="amount ${s.sanad>0?'amount-info':''}">${s.sanad>0?fmtNum(s.sanad):'—'}</td>
+      <td><span class="resp-badge">${s.resp||'—'}</span></td>
+      <td>${renderProgressCell(s.progress)}</td>
+      <td style="font-size:11px;max-width:150px;white-space:normal;color:var(--text2)">${s.notes||'—'}</td>
+      <td class="td-edit no-print">
+        <button class="btn-edit" onclick="startEdit(${s.id})">✏️</button>
+        <button class="btn-del" onclick="deleteSupplier(${s.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableBody').innerHTML = html;
+}
+
+function startEdit(id) { editingId = id; renderTable(); }
+function cancelEdit() { editingId = null; renderTable(); }
+function saveEdit(id) {
+  const s = suppliers.find(x=>x.id===id);
+  if(!s) return;
+  s.name = document.getElementById('e_name').value;
+  s.type = document.getElementById('e_type').value;
+  s.tawasol = document.getElementById('e_tawasol').value;
+  s.itifaq = document.getElementById('e_itifaq').value;
+  s.status = document.getElementById('e_status').value;
+  s.balance = parseFloat(document.getElementById('e_balance').value)||0;
+  s.cash = parseFloat(document.getElementById('e_cash').value)||0;
+  s.sanad = parseFloat(document.getElementById('e_sanad').value)||0;
+  s.resp = document.getElementById('e_resp').value;
+  s.progress = document.getElementById('e_progress').value;
+  s.notes = document.getElementById('e_notes').value;
+  editingId = null;
+  renderTable();
+  renderKPIs();
+  showToast('✅ تم تحديث بيانات المورد: ' + s.name);
+}
+function deleteSupplier(id) {
+  const s = suppliers.find(x=>x.id===id);
+  if(!s) return;
+  if(!confirm(`هل تريد حذف المورد "${s.name}"؟`)) return;
+  suppliers = suppliers.filter(x=>x.id!==id);
+  renderTable();
+  renderKPIs();
+  renderReportCards();
+  showToast('🗑 تم حذف المورد: ' + s.name);
+}
+
+// =================== MANAGE TABLE ===================
+function renderManageTable() {
+  const search = document.getElementById('manageSearch').value.toLowerCase();
+  const data = suppliers.filter(s => !search || s.name.toLowerCase().includes(search));
+  const html = data.map(s => `<tr>
+    <td>${s.id}</td>
+    <td style="font-weight:600">${s.name}</td>
+    <td><span class="rc-badge ${getBadgeClass(s.type)}">${s.type}</span></td>
+    <td>${getStatusPill(s.status)}</td>
+    <td class="amount ${s.balance>0?'amount-danger':''}">${s.balance>0?fmtNum(Math.round(s.balance)):'—'}</td>
+    <td class="amount ${s.cash>0?'amount-success':''}">${s.cash>0?fmtNum(s.cash):'—'}</td>
+    <td class="amount ${s.sanad>0?'amount-info':''}">${s.sanad>0?fmtNum(s.sanad):'—'}</td>
+    <td><span class="resp-badge">${s.resp||'—'}</span></td>
+    <td class="td-edit">
+      <button class="btn-edit" onclick="switchTab('data'); setTimeout(()=>startEdit(${s.id}),100)">✏️ تعديل</button>
+      <button class="btn-del" onclick="deleteSupplier(${s.id}); renderManageTable()">🗑</button>
+    </td>
+  </tr>`).join('');
+  document.getElementById('manageTableBody').innerHTML = html;
+}
+
+// =================== ADD SUPPLIER ===================
+function addSupplier() {
+  const name = document.getElementById('new_name').value.trim();
+  if(!name) { showToast('⚠️ يرجى إدخال اسم المورد'); return; }
+  const newId = Math.max(...suppliers.map(s=>s.id)) + 1;
+  suppliers.push({
+    id: newId,
+    name,
+    type: document.getElementById('new_type').value,
+    tawasol: document.getElementById('new_tawasol').value,
+    itifaq: document.getElementById('new_itifaq').value,
+    status: document.getElementById('new_status').value,
+    balance: parseFloat(document.getElementById('new_balance').value)||0,
+    cash: parseFloat(document.getElementById('new_cash').value)||0,
+    sanad: parseFloat(document.getElementById('new_sanad').value)||0,
+    resp: document.getElementById('new_resp').value,
+    progress: document.getElementById('new_progress').value||null,
+    notes: document.getElementById('new_notes').value
+  });
+  // Clear form
+  ['new_name','new_balance','new_cash','new_sanad','new_progress','new_notes'].forEach(id => document.getElementById(id).value = '');
+  renderKPIs();
+  renderReportCards();
+  showToast('✅ تمت إضافة المورد: ' + name);
+}
+
+// =================== SUMMARY CHARTS ===================
+function destroyChart(id) { if(chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; } }
+
+function renderSummary() {
+  renderKPIs();
+
+  // Chart 1: Types
+  destroyChart('chartTypes');
+  const typeCount = {};
+  suppliers.forEach(s => typeCount[s.type] = (typeCount[s.type]||0)+1);
+  chartInstances['chartTypes'] = new Chart(document.getElementById('chartTypes'), {
+    type:'doughnut',
+    data:{
+      labels: Object.keys(typeCount),
+      datasets:[{data: Object.values(typeCount), backgroundColor:['#C9A84C','#2196F3','#F39C12','#27AE60','#9B59B6'], borderColor:'#1B2D42', borderWidth:2}]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{color:'#A89B78',font:{family:'Tajawal',size:12},padding:12}}}}
+  });
+
+  // Chart 2: Status
+  destroyChart('chartStatus');
+  const statCount = {};
+  suppliers.forEach(s => statCount[s.status] = (statCount[s.status]||0)+1);
+  chartInstances['chartStatus'] = new Chart(document.getElementById('chartStatus'), {
+    type:'pie',
+    data:{
+      labels: Object.keys(statCount),
+      datasets:[{data: Object.values(statCount), backgroundColor:['#27AE60','#2196F3','#C9A84C','#9B59B6'], borderColor:'#1B2D42', borderWidth:2}]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{color:'#A89B78',font:{family:'Tajawal',size:12},padding:12}}}}
+  });
+
+  // Chart 3: Top 10
+  destroyChart('chartTop10');
+  const top10 = [...suppliers].filter(s=>s.balance>0).sort((a,b)=>b.balance-a.balance).slice(0,10);
+  chartInstances['chartTop10'] = new Chart(document.getElementById('chartTop10'), {
+    type:'bar',
+    data:{
+      labels: top10.map(s=>s.name),
+      datasets:[{label:'الرصيد الدائن', data: top10.map(s=>Math.round(s.balance)), backgroundColor:'rgba(201,168,76,0.7)', borderColor:'#C9A84C', borderWidth:1}]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#A89B78',font:{family:'Tajawal'}}, grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:'#E8E4D8',font:{family:'Tajawal',size:11}}, grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+
+  // Chart 4: Responsibilities
+  destroyChart('chartResp');
+  const respCount = {};
+  suppliers.forEach(s => { const r = s.resp||'غير محدد'; respCount[r] = (respCount[r]||0)+1; });
+  chartInstances['chartResp'] = new Chart(document.getElementById('chartResp'), {
+    type:'bar',
+    data:{
+      labels: Object.keys(respCount),
+      datasets:[{label:'عدد الموردين', data: Object.values(respCount), backgroundColor:['#2196F3','#C9A84C','#27AE60','#F39C12','#9B59B6'], borderColor:'transparent'}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#A89B78',font:{family:'Tajawal',size:10},maxRotation:30}, grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:'#A89B78',font:{family:'Tajawal'}}, grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+
+  // Chart 5: Compare top 15
+  destroyChart('chartCompare');
+  const top15 = [...suppliers].sort((a,b)=>(b.cash+b.sanad)-(a.cash+a.sanad)).slice(0,15);
+  chartInstances['chartCompare'] = new Chart(document.getElementById('chartCompare'), {
+    type:'bar',
+    data:{
+      labels: top15.map(s=>s.name),
+      datasets:[
+        {label:'الدفعات النقدية', data:top15.map(s=>s.cash), backgroundColor:'rgba(39,174,96,0.7)', borderColor:'#27AE60', borderWidth:1},
+        {label:'سند الأمر', data:top15.map(s=>s.sanad), backgroundColor:'rgba(33,150,243,0.7)', borderColor:'#2196F3', borderWidth:1}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#A89B78',font:{family:'Tajawal'}}}},
+      scales:{
+        x:{ticks:{color:'#A89B78',font:{family:'Tajawal',size:10},maxRotation:40}, grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:'#A89B78',font:{family:'Tajawal'}}, grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+
+  // Smart Alerts
+  const alerts = [];
+  const highBalance = suppliers.filter(s=>s.balance>300000);
+  if(highBalance.length) alerts.push({type:'danger', icon:'🚨', title:'أرصدة دائنة عالية', msg:`${highBalance.length} مورد برصيد يتجاوز 300,000 ر.س: ${highBalance.map(s=>s.name).join('، ')}`});
+  const noContact = suppliers.filter(s=>!s.tawasol || s.tawasol==='لم يتم');
+  if(noContact.length) alerts.push({type:'warning', icon:'📞', title:'لم يتم التواصل', msg:`${noContact.length} مورد لم يتم التواصل معهم بعد`});
+  const noAgreement = suppliers.filter(s=>s.tawasol==='تم' && (!s.itifaq || s.itifaq==='لم يتم'));
+  if(noAgreement.length) alerts.push({type:'warning', icon:'🤝', title:'في انتظار الاتفاق', msg:`${noAgreement.length} مورد تم التواصل معهم لكن لم يتم الاتفاق`});
+  const cashSup = suppliers.filter(s=>s.type==='كاش');
+  if(cashSup.length) alerts.push({type:'info', icon:'💵', title:'موردو الكاش', msg:`${cashSup.length} موردين بنظام الكاش: ${cashSup.map(s=>s.name).join('، ')}`});
+  const newOnes = suppliers.filter(s=>s.type==='جديد');
+  if(newOnes.length) alerts.push({type:'gold', icon:'🌟', title:'موردون جدد', msg:`${newOnes.length} مورد جديد قيد المتابعة`});
+
+  const alertColors = {danger:'rgba(231,76,60,0.15)',warning:'rgba(243,156,18,0.15)',info:'rgba(33,150,243,0.15)',gold:'rgba(201,168,76,0.15)'};
+  const alertBorders = {danger:'#E74C3C',warning:'#F39C12',info:'#2196F3',gold:'#C9A84C'};
+  document.getElementById('smartAlerts').innerHTML = alerts.map(a => `
+    <div style="background:${alertColors[a.type]};border:1px solid ${alertBorders[a.type]};border-radius:12px;padding:16px;border-right:4px solid ${alertBorders[a.type]}">
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:${alertBorders[a.type]}">${a.icon} ${a.title}</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6">${a.msg}</div>
+    </div>
+  `).join('');
+
+  // Responsibility Table
+  const respMap = {};
+  suppliers.forEach(s => {
+    const r = s.resp||'غير محدد';
+    if(!respMap[r]) respMap[r]={count:0,balance:0,cash:0,sanad:0};
+    respMap[r].count++;
+    respMap[r].balance += s.balance||0;
+    respMap[r].cash += s.cash||0;
+    respMap[r].sanad += s.sanad||0;
+  });
+  const totalAll = Object.values(respMap).reduce((a,r)=>a+r.balance,0);
+  document.getElementById('respTableBody').innerHTML = Object.entries(respMap).sort((a,b)=>b[1].count-a[1].count).map(([r,d]) => `<tr>
+    <td style="font-weight:600">${r}</td>
+    <td style="text-align:center;color:var(--gold);font-weight:700">${d.count}</td>
+    <td class="amount amount-danger">${fmtNum(Math.round(d.balance))}</td>
+    <td class="amount amount-success">${fmtNum(d.cash)}</td>
+    <td class="amount amount-info">${fmtNum(d.sanad)}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${totalAll>0?Math.round((d.balance/totalAll)*100):0}%"></div></div>
+        <span style="font-size:12px;color:var(--gold);min-width:32px">${totalAll>0?Math.round((d.balance/totalAll)*100):0}%</span>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+// =================== STATUS TAB ===================
+function getStatusFilteredSuppliers() {
+  const search = (document.getElementById('statusSearch')||{value:''}).value.toLowerCase();
+  const fType = (document.getElementById('statusFilterType')||{value:''}).value;
+  const fTawasol = (document.getElementById('statusFilterTawasol')||{value:''}).value;
+  const fItifaq = (document.getElementById('statusFilterItifaq')||{value:''}).value;
+  const fProg = (document.getElementById('statusFilterProgress')||{value:''}).value;
+  return suppliers.filter(s => {
+    if(search && !s.name.toLowerCase().includes(search)) return false;
+    if(fType && s.type !== fType) return false;
+    if(fTawasol && s.tawasol !== fTawasol) return false;
+    if(fItifaq && s.itifaq !== fItifaq) return false;
+    if(fProg) {
+      const n = getProgressNum(s.progress);
+      if(fProg==='complete' && !(n !== null && n >= 100)) return false;
+      if(fProg==='high' && !(n !== null && n >= 75 && n < 100)) return false;
+      if(fProg==='mid' && !(n !== null && n >= 25 && n < 75)) return false;
+      if(fProg==='low' && !(n !== null && n > 0 && n < 25)) return false;
+      if(fProg==='zero' && !(n === null || n === 0)) return false;
+    }
+    return true;
+  });
+}
+
+function renderStatusTab() {
+  const data = getStatusFilteredSuppliers();
+  document.getElementById('statusCount').textContent = data.length + ' مورد';
+
+  // KPIs for filtered
+  const tBalance = data.reduce((a,s)=>a+(s.balance||0),0);
+  const tCash = data.reduce((a,s)=>a+(s.cash||0),0);
+  const tSanad = data.reduce((a,s)=>a+(s.sanad||0),0);
+  const cContacted = data.filter(s=>s.tawasol==='تم').length;
+  const cAgreed = data.filter(s=>s.itifaq==='تم').length;
+  const cComplete = data.filter(s=>{ const n=getProgressNum(s.progress); return n!==null && n>=100; }).length;
+  document.getElementById('statusKpis').innerHTML = `
+    <div class="kpi-card gold"><div class="kpi-label">الرصيد الدائن (مفلتر)</div><div class="kpi-value" style="font-size:18px">${fmtNum(Math.round(tBalance))}</div><div class="kpi-sub">ريال سعودي</div></div>
+    <div class="kpi-card green"><div class="kpi-label">الدفعات النقدية (مفلتر)</div><div class="kpi-value" style="font-size:18px">${fmtNum(tCash)}</div><div class="kpi-sub">ريال سعودي</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">سندات الأمر (مفلتر)</div><div class="kpi-value" style="font-size:18px">${fmtNum(tSanad)}</div><div class="kpi-sub">ريال سعودي</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">عدد الموردين المفلترة</div><div class="kpi-value">${data.length}</div><div class="kpi-sub">${cContacted} تم التواصل</div></div>
+    <div class="kpi-card red"><div class="kpi-label">تم الاتفاق</div><div class="kpi-value">${cAgreed}</div><div class="kpi-sub">${cComplete} مكتمل 100%</div></div>
+  `;
+
+  const html = data.map(s => {
+    const n = getProgressNum(s.progress);
+    const isComplete = n !== null && n >= 100;
+    const rowBg = isComplete ? 'background:rgba(39,174,96,0.08);' : '';
+    return `<tr style="${rowBg}">
+      <td>${s.id}</td>
+      <td style="font-weight:700">${s.name}</td>
+      <td><span class="rc-badge ${getBadgeClass(s.type)}">${s.type}</span></td>
+      <td><span style="font-weight:600;color:${s.tawasol==='تم'?'#66BB6A':'#EF5350'}">${s.tawasol||'—'}</span></td>
+      <td><span style="font-weight:600;color:${s.itifaq==='تم'?'#66BB6A':'#EF5350'}">${s.itifaq||'—'}</span></td>
+      <td>${getStatusPill(s.status)}</td>
+      <td class="amount ${s.balance>0?'amount-danger':''}">${s.balance>0?fmtNum(Math.round(s.balance)):'—'}</td>
+      <td class="amount ${s.cash>0?'amount-success':''}">${s.cash>0?fmtNum(s.cash):'—'}</td>
+      <td class="amount ${s.sanad>0?'amount-info':''}">${s.sanad>0?fmtNum(s.sanad):'—'}</td>
+      <td>${renderProgressCell(s.progress)}</td>
+      <td><span class="resp-badge">${s.resp||'—'}</span></td>
+      <td style="font-size:11px;max-width:130px;white-space:normal;color:var(--text2)">${s.notes||'—'}</td>
+      <td class="no-print">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" min="0" max="100" value="${n !== null ? n : ''}" placeholder="%" style="width:60px;padding:4px 6px;font-size:12px;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;text-align:center;" id="prog_${s.id}">
+          <button class="btn-save" style="padding:4px 10px;font-size:11px;" onclick="updateProgress(${s.id})">حفظ</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('statusTableBody').innerHTML = html || '<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text2);">لا توجد نتائج</td></tr>';
+}
+
+function updateProgress(id) {
+  const s = suppliers.find(x=>x.id===id);
+  if(!s) return;
+  const val = document.getElementById('prog_'+id).value.trim();
+  s.progress = val === '' ? null : val;
+  renderStatusTab();
+  renderReportCards();
+  renderTable();
+  showToast('✅ تم تحديث نسبة إنجاز: ' + s.name + ' → ' + (val||'—'));
+}
+
+function printFiltered() {
+  const data = getStatusFilteredSuppliers();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ar-SA', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const timeStr = now.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+  let html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+  <style>
+    body{font-family:'Tajawal',sans-serif;direction:rtl;color:#000;background:#fff;padding:20px;}
+    h1{font-size:20px;color:#8B6914;text-align:center;margin-bottom:4px;}
+    .sub{text-align:center;font-size:12px;color:#666;margin-bottom:4px;}
+    .date{text-align:center;font-size:11px;color:#888;margin-bottom:16px;border-bottom:2px solid #C9A84C;padding-bottom:10px;}
+    table{width:100%;border-collapse:collapse;font-size:10px;}
+    th{background:#C9A84C;color:#fff;padding:8px;text-align:right;}
+    td{padding:6px 8px;border:1px solid #ddd;}
+    tr:nth-child(even){background:#f9f5e8;}
+    .done{color:#27AE60;font-weight:700;}
+    .no{color:#E74C3C;}
+    .badge{padding:2px 8px;border-radius:10px;font-size:9px;}
+    @page{margin:1cm;size:A4 landscape;}
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  </head><body>
+  <h1>شركة لمسة داري التجارية</h1>
+  <div class="sub">تقرير حالة الموردين - نتائج مفلترة (${data.length} مورد)</div>
+  <div class="date">تاريخ الطباعة: ${dateStr} - ${timeStr}</div>
+  <table><thead><tr>
+    <th>#</th><th>اسم المورد</th><th>نوع الحساب</th><th>التواصل</th><th>الاتفاق</th>
+    <th>حالة السداد</th><th>الرصيد الدائن</th><th>الدفعات النقدية</th><th>سند الأمر</th>
+    <th>نسبة الإنجاز</th><th>المسؤول</th><th>ملاحظات</th>
+  </tr></thead><tbody>`;
+  data.forEach(s => {
+    const n = getProgressNum(s.progress);
+    const progTxt = n !== null ? (n >= 100 ? '✅ تم اكمال الملف' : n + '%') : (s.progress||'—');
+    html += `<tr>
+      <td>${s.id}</td><td><b>${s.name}</b></td><td>${s.type}</td>
+      <td class="${s.tawasol==='تم'?'done':'no'}">${s.tawasol||'—'}</td>
+      <td class="${s.itifaq==='تم'?'done':'no'}">${s.itifaq||'—'}</td>
+      <td>${s.status}</td>
+      <td>${s.balance>0?fmtNum(Math.round(s.balance)):'—'}</td>
+      <td>${s.cash>0?fmtNum(s.cash):'—'}</td>
+      <td>${s.sanad>0?fmtNum(s.sanad):'—'}</td>
+      <td>${progTxt}</td>
+      <td>${s.resp||'—'}</td>
+      <td style="font-size:9px;white-space:normal;max-width:100px">${s.notes||'—'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></body></html>';
+  const w = window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(), 800);
+}
+
+// =================== TOAST ===================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// =================== INIT ===================
+renderKPIs();
+populateFilters();
+renderReportCards();
+renderTable();
+</script>
+</body>
+</html>
